@@ -1,0 +1,11 @@
+{% extends 'layout.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Hola, {{ usuario.primer_nombre }} {{ usuario.primer_apellido }}</h2>
+    <p>Rol: {{ usuario.rol }}</p>
+    <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger mt-3">Cerrar sesión</a>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'auth_layout.html' %}
+
+{% block title %}Registrarse{% endblock %}
+
+{% block content %}
+<h3 class="text-center mb-4">Crear cuenta</h3>
+<form method="POST">
+    {{ form.hidden_tag() }}
+
+    <div class="mb-3">
+        {{ form.primer_nombre.label(class="form-label") }}
+        {{ form.primer_nombre(class="form-control") }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.primer_apellido.label(class="form-label") }}
+        {{ form.primer_apellido(class="form-control") }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.correo.label(class="form-label") }}
+        {{ form.correo(class="form-control") }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.contrasenia.label(class="form-label") }}
+        {{ form.contrasenia(class="form-control") }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.confirmar_contrasenia.label(class="form-label") }}
+        {{ form.confirmar_contrasenia(class="form-control") }}
+    </div>
+
+    <div class="d-grid">
+        {{ form.submit(class="btn btn-success") }}
+    </div>
+</form>
+{% endblock %}
