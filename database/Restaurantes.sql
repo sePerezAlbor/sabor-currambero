@@ -1,5 +1,26 @@
 USE sabor_currambero;
 
+INSERT INTO `Usuario` (
+    `primer_nombre`, 
+    `segundo_nombre`, 
+    `primer_apellido`, 
+    `segundo_apellido`, 
+    `correo`, 
+    `contrasenia`, 
+    `fecha_registro`, 
+    `rol`
+) VALUES (
+    'Admin',          -- primer nombre genérico
+    NULL,             -- segundo nombre nulo
+    'Usuario',        -- primer apellido genérico
+    NULL,             -- segundo apellido nulo
+    'admin@ejemplo.com', -- correo genérico
+    '123',            -- contraseña simple 123
+    NOW(),            -- fecha actual de registro
+    'admin'           -- rol admin
+);
+
+
 INSERT INTO Restaurante (nombre, direccion, tipo_comida, precio_promedio, latitud, longitud, calificacion_prom, estado, instagram)
 VALUES ('Rincón Currambero', 'Cra 50 #76-32, Barranquilla', 'Típica', 50000, 10.9966243, -74.8028719, 4.1, 1, '@rincóncurrambero');
 
