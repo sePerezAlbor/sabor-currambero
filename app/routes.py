@@ -7,14 +7,22 @@ from app import db
 
 main = Blueprint('main', __name__)
 
+def perfil_a_dict(perfil):
+    return {
+        "tipo_comida_fav": perfil.tipo_comida_fav,
+        "presupuesto_promedio": perfil.presupuesto_promedio
+    }
+    
 # Página principal
 @main.route('/')
 def index():
     perfil = None
+    tipos_comida = db.session.query(Restaurante.tipo_comida).distinct().all()
     if current_user.is_authenticated:
         perfil = current_user.perfil  # accede a la relación definida en el modelo Usuario
+        perfil_dict = perfil_a_dict(perfil) if perfil else None
 
-    return render_template('index.html', usuario=current_user, perfil=perfil)
+    return render_template('index.html', usuario=current_user, perfil=perfil_dict, tipos_comida=tipos_comida)
 
 # Login
 @main.route('/login', methods=['GET', 'POST'])

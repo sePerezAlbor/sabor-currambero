@@ -13,12 +13,9 @@
                     <label for="filtroComida" class="form-label">Tipo de comida</label>
                     <select class="form-select mb-3" id="filtroComida">
                         <option value="">Todas</option>
-                        <option value="Rápida">Rápida</option>
-                        <option value="Árabe">Árabe</option>
-                        <option value="Mexicana">Mexicana</option>
-                        <option value="Caribeña">Caribeña</option>
-                        <option value="Típica">Típica</option>
-                        <option value="Italiana">Italiana</option>
+                        {% for tipo in tipos_comida %}
+                        <option value="{{ tipo[0] }}">{{ tipo[0] }}</option>
+                        {% endfor %}
                     </select>
 
                     <label for="filtroPresupuesto" class="form-label">
@@ -27,29 +24,31 @@
                     <input type="range" class="form-range mb-3" min="10000" max="100000" step="5000" value="100000" id="filtroPresupuesto">
                     {% if perfil %}
                     <div class="card mt-4 shadow-sm border-0">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">Tu Perfil Gastronómico</h5>
-                    </div>
-                    <div class="card-body">
-                        <p><strong>🍽️ Tipo de comida favorita:</strong> {{ perfil.tipo_comida_fav or "No especificado" }}</p>
-                        <p><strong>⚠️ Restricciones alimenticias:</strong> {{ perfil.restricciones or "Ninguna" }}</p>
-                        <p><strong>💰 Presupuesto promedio:</strong> 
-                        {% if perfil.presupuesto_promedio %}
-                            ${{ perfil.presupuesto_promedio }}
-                        {% else %}
-                            No especificado
-                        {% endif %}
-                        </p>
-                        <a href="{{ url_for('main.perfil') }}" class="btn btn-outline-primary mt-2">Editar perfil</a>
-                    </div>
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Tu Perfil Gastronómico</h5>
+                            <button type="button" class="btn btn-light btn-sm" onclick="aplicarRecomendaciones()">
+                                🎯 Buscar segun mi perfil
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>🍽️ Tipo de comida favorita:</strong> {{ perfil.tipo_comida_fav or "No especificado" }}</p>
+                            <p><strong>⚠️ Restricciones alimenticias:</strong> {{ perfil.restricciones or "Ninguna" }}</p>
+                            <p><strong>💰 Presupuesto promedio:</strong> 
+                                {% if perfil.presupuesto_promedio %}
+                                    ${{ perfil.presupuesto_promedio }}
+                                {% else %}
+                                    No especificado
+                                {% endif %}
+                            </p>
+                            <a href="{{ url_for('main.perfil') }}" class="btn btn-outline-primary mt-2">Editar perfil</a>
+                        </div>
                     </div>
                     {% else %}
                     <div class="alert alert-warning mt-4">
-                    Aún no has configurado tu perfil gastronómico. 
-                    <a href="{{ url_for('main.perfil') }}" class="alert-link">Hazlo aquí</a>.
+                        Aún no has configurado tu perfil gastronómico. 
+                        <a href="{{ url_for('main.perfil') }}" class="alert-link">Hazlo aquí</a>.
                     </div>
                     {% endif %}
-
                 </form>
             </aside>
 
@@ -77,4 +76,41 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/mapa.js') }}"></script>
+    <script>
+    const perfilUsuario = {{ perfil | tojson | safe }};
+    </script>   
+    <script>
+    function aplicarRecomendaciones() {
+        if (!perfilUsuario) {
+            alert("Primero configura tu perfil gastronómico.");
+            return;
+        }
+
+        const tipo = perfilUsuario.tipo_comida_fav;
+        const presupuesto = perfilUsuario.presupuesto_promedio;
+
+        const select = document.getElementById('filtroComida');
+        const presupuestoInput = document.getElementById('filtroPresupuesto');
+
+        if (tipo) {
+            const opciones = Array.from(select.options);
+            const hayPrincipal = opciones.some(o => o.value === tipo);
+            if (hayPrincipal) {
+                select.value = tipo;
+            } else {
+                select.value = "";
+            }
+        }
+
+        if (presupuesto) {
+            presupuestoInput.value = presupuesto;
+            document.getElementById('valorPresupuesto').textContent = `$${presupuesto}`;
+        }
+
+        // Disparar eventos para que se actualice el mapa y ranking
+        select.dispatchEvent(new Event('change'));
+        presupuestoInput.dispatchEvent(new Event('input'));
+    }
+    </script>
+
 {% endblock %}
