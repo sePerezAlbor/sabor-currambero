@@ -17,21 +17,40 @@
                         <option value="{{ tipo[0] }}">{{ tipo[0] }}</option>
                         {% endfor %}
                     </select>
+                    <!-- Tipo complementario 1 (oculto) -->
+                    <select class="form-select d-none" id="tipoComplementario1">
+                        {% for tipo in tipos_comida %}
+                        <option value="{{ tipo[0] }}">{{ tipo[0] }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <!-- Tipo complementario 2 (oculto) -->
+                    <select class="form-select d-none" id="tipoComplementario2">
+                        {% for tipo in tipos_comida %}
+                        <option value="{{ tipo[0] }}">{{ tipo[0] }}</option>
+                        {% endfor %}
+                    </select>
+
 
                     <label for="filtroPresupuesto" class="form-label">
                         Presupuesto máximo: <span id="valorPresupuesto">$100000</span>
                     </label>
                     <input type="range" class="form-range mb-3" min="10000" max="100000" step="5000" value="100000" id="filtroPresupuesto">
+                    <button type="button" id="btnLimpiarFiltros" class="btn btn-secondary mt-3 w-100">
+                        Limpiar filtros
+                    </button>
+
                     {% if perfil %}
                     <div class="card mt-4 shadow-sm border-0">
                         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">Tu Perfil Gastronómico</h5>
                             <button type="button" class="btn btn-light btn-sm" onclick="aplicarRecomendaciones()">
-                                🎯 Buscar segun mi perfil
+                                🎯 Recomendaciones
                             </button>
                         </div>
                         <div class="card-body">
                             <p><strong>🍽️ Tipo de comida favorita:</strong> {{ perfil.tipo_comida_fav or "No especificado" }}</p>
+                            
                             <p><strong>⚠️ Restricciones alimenticias:</strong> {{ perfil.restricciones or "Ninguna" }}</p>
                             <p><strong>💰 Presupuesto promedio:</strong> 
                                 {% if perfil.presupuesto_promedio %}
@@ -65,6 +84,8 @@
             <!-- Sidebar derecho -->
             <aside class="col-12 col-md-3 bg-light p-3">
                 <h5 class="mb-3">Ranking</h5>
+                <div id="tiposComplementariosSeleccionados">
+                </div>
                 <ul class="list-group" id="rankingRestaurantes">
                     <!-- Se llena dinámicamente con JS -->
                 </ul>
@@ -80,37 +101,111 @@
     const perfilUsuario = {{ perfil | tojson | safe }};
     </script>   
     <script>
-    function aplicarRecomendaciones() {
-        if (!perfilUsuario) {
-            alert("Primero configura tu perfil gastronómico.");
-            return;
+        function limpiarFiltros() {
+                // Resetear inputs
+                document.getElementById('filtroBusqueda').value = "";
+                document.getElementById('filtroComida').value = "";
+                document.getElementById('tipoComplementario1').value = "";
+                document.getElementById('tipoComplementario2').value = "";
+                document.getElementById('filtroPresupuesto').value = 100000;
+                document.getElementById('valorPresupuesto').textContent = "$100000";
+
+                // Limpiar texto de tipos complementarios seleccionados
+                document.getElementById('tiposComplementariosSeleccionados').innerHTML = "";
+
+                // Disparar evento para que se apliquen los filtros vacíos (mostrar todo)
+                const eventChange = new Event('change');
+                const eventInput = new Event('input');
+
+                document.getElementById('filtroComida').dispatchEvent(eventChange);
+                document.getElementById('tipoComplementario1').dispatchEvent(eventChange);
+                document.getElementById('tipoComplementario2').dispatchEvent(eventChange);
+                document.getElementById('filtroPresupuesto').dispatchEvent(eventInput);
+                document.getElementById('filtroBusqueda').dispatchEvent(eventInput);
+         }
+
+            // Vincular el botón con la función limpiarFiltros
+            document.getElementById('btnLimpiarFiltros').addEventListener('click', limpiarFiltros);
+
+        function mostrarTiposComplementarios() {
+            const tipo1 = document.getElementById('tipoComplementario1').value;
+            const tipo2 = document.getElementById('tipoComplementario2').value;
+            const contenedor = document.getElementById('tiposComplementariosSeleccionados');
+                if (!tipo1 && !tipo2) {
+                    contenedor.innerHTML = "";
+                    return; // No mostrar nada si no hay tipos seleccionados
+                }
+            let texto = '';    
+
+            if (tipo1) texto += tipo1;
+            if (tipo2) texto += (texto ? ', ' : '') + tipo2;
+
+            if (!texto) texto = 'Ninguno seleccionado';
+
+            contenedor.innerHTML = `<strong>Tipos complementarios seleccionados:</strong> ${texto}`;
         }
 
-        const tipo = perfilUsuario.tipo_comida_fav;
-        const presupuesto = perfilUsuario.presupuesto_promedio;
-
-        const select = document.getElementById('filtroComida');
-        const presupuestoInput = document.getElementById('filtroPresupuesto');
-
-        if (tipo) {
-            const opciones = Array.from(select.options);
-            const hayPrincipal = opciones.some(o => o.value === tipo);
-            if (hayPrincipal) {
-                select.value = tipo;
-            } else {
-                select.value = "";
+        function aplicarRecomendaciones() {
+            if (!perfilUsuario) {
+                alert("Primero configura tu perfil gastronómico.");
+                return;
             }
+
+            const tipoPrincipal = perfilUsuario.tipo_comida_fav;
+            const presupuesto = perfilUsuario.presupuesto_promedio;
+
+            const selectPrincipal = document.getElementById('filtroComida');
+            const presupuestoInput = document.getElementById('filtroPresupuesto');
+            const tipo1 = document.getElementById('tipoComplementario1');
+            const tipo2 = document.getElementById('tipoComplementario2');
+
+            // Mapa de relaciones de tipos complementarios
+            const mapaComplementarios = {
+            'Italiana': ['Fusión', 'Internacional'],
+            'Mexicana': ['Típica', 'Tex-Mex'],       // Tex-Mex no está en los datos pero es habitual; si quieres, lo podemos quitar.
+            'Japonesa': ['Coreana', 'China'],       // Coreana no está en los datos, pero se puede mantener si quieres.
+            'Colombiana': ['Típica', 'Criolla'],
+            'China': ['Tailandesa', 'Japonesa'],    // Tailandesa no aparece, pero es una buena opción como complementario.
+            'Típica': ['Colombiana', 'Criolla'],
+            'Caribeña': ['Mariscos', 'Típica'],
+            'Mariscos': ['Caribeña', 'Peruana'],
+            'Peruana': ['Mariscos', 'Típica'],
+            'Criolla': ['Típica', 'Colombiana'],
+            'Rápida': ['Comida Urbana', 'Parrilla'],
+            'Fusión': ['Italiana', 'Internacional'],
+            'Internacional': ['Fusión', 'Italiana'],
+            'Parrilla': ['Rápida', 'Comida Urbana'],
+            'Comida Urbana': ['Rápida', 'Parrilla'],
+            'India': ['Árabe', 'Internacional'],
+            'Árabe': ['India', 'Internacional'],
+            'Pacífica': ['Típica', 'Caribeña'],
         }
 
-        if (presupuesto) {
-            presupuestoInput.value = presupuesto;
-            document.getElementById('valorPresupuesto').textContent = `$${presupuesto}`;
-        }
 
-        // Disparar eventos para que se actualice el mapa y ranking
-        select.dispatchEvent(new Event('change'));
-        presupuestoInput.dispatchEvent(new Event('input'));
-    }
-    </script>
+            if (tipoPrincipal) {
+                // Asignar tipo principal
+                selectPrincipal.value = tipoPrincipal;
+
+                // Obtener tipos complementarios (si existen)
+                const complementarios = mapaComplementarios[tipoPrincipal] || ["", ""];
+
+                tipo1.value = complementarios[0];
+                tipo2.value = complementarios[1];
+            }
+
+            if (presupuesto) {
+                presupuestoInput.value = presupuesto;
+                document.getElementById('valorPresupuesto').textContent = `$${presupuesto}`;
+            }
+
+            // Disparar eventos
+            selectPrincipal.dispatchEvent(new Event('change'));
+            tipo1.dispatchEvent(new Event('change'));
+            tipo2.dispatchEvent(new Event('change'));
+            presupuestoInput.dispatchEvent(new Event('input'));
+
+        }
+        </script>
+
 
 {% endblock %}

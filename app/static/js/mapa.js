@@ -64,15 +64,21 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function aplicarFiltros(restaurantes) {
-        const tipo = document.getElementById('filtroComida').value;
+        const tipos = [
+            document.getElementById('filtroComida').value,
+            document.getElementById('tipoComplementario1').value,
+            document.getElementById('tipoComplementario2').value
+        ].filter(t => t !== ""); // Eliminar vacíos
+
         const maxPresupuesto = parseInt(document.getElementById('filtroPresupuesto').value);
         const textoBusqueda = document.getElementById('filtroBusqueda').value.toLowerCase();
 
         const filtrados = restaurantes.filter(r =>
-            (tipo === "" || r.tipo_comida === tipo) &&
+            (tipos.length === 0 || tipos.includes(r.tipo_comida)) &&
             (isNaN(maxPresupuesto) || r.precio_promedio <= maxPresupuesto) &&
             r.nombre.toLowerCase().includes(textoBusqueda)
         );
+
 
         limpiarMarcadores();
 
@@ -92,7 +98,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Filtro por tipo de comida
             document.getElementById('filtroComida').addEventListener('change', () => aplicarFiltros(data));
-
+            document.getElementById('tipoComplementario1').addEventListener('change', () => {
+                aplicarFiltros(data);
+                mostrarTiposComplementarios();
+            });
+            document.getElementById('tipoComplementario2').addEventListener('change', () => {
+                aplicarFiltros(data);
+                mostrarTiposComplementarios();
+            });
             // Filtro por búsqueda de nombre
             document.getElementById('filtroBusqueda').addEventListener('input', () => aplicarFiltros(data));
 
