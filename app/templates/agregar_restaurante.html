@@ -1,0 +1,96 @@
+{% extends 'layout.html' %}
+
+{% block title %}Agregar Restaurante{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+  <div class="card shadow-sm" style="width: 600px;">
+    <div class="card-body">
+      <h3 class="card-title text-center mb-4">Agregar Restaurante</h3>
+
+      <form method="POST" action="{{ url_for('main.AgregarRestaurante') }}">
+          {{ form.hidden_tag() }}
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">{{ form.nombre.label.text }}</label>
+              {{ form.nombre(class="form-control") }}
+              {% for error in form.nombre.errors %}
+                  <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">{{ form.direccion.label.text }}</label>
+              {{ form.direccion(class="form-control") }}
+              {% for error in form.direccion.errors %}
+                  <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">{{ form.tipo_comida.label.text }}</label>
+              {{ form.tipo_comida(class="form-control") }}
+              {% for error in form.tipo_comida.errors %}
+                  <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">{{ form.precio_promedio.label.text }}</label>
+              {{ form.precio_promedio(class="form-control") }}
+              {% for error in form.precio_promedio.errors %}
+                  <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">{{ form.latitud.label.text }}</label>
+              {{ form.latitud(class="form-control") }}
+              {% for error in form.latitud.errors %}
+                  <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">{{ form.longitud.label.text }}</label>
+              {{ form.longitud(class="form-control") }}
+              {% for error in form.longitud.errors %}
+                  <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">{{ form.calificacion_prom.label.text }}</label>
+              {{ form.calificacion_prom(class="form-control") }}
+              {% for error in form.calificacion_prom.errors %}
+                  <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">{{ form.estado.label.text }}</label>
+              {{ form.estado(class="form-select") }}
+              {% for error in form.estado.errors %}
+                  <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">{{ form.instagram.label.text }}</label>
+              {{ form.instagram(class="form-control") }}
+              {% for error in form.instagram.errors %}
+                  <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="d-grid mt-4">
+              {{ form.submit(class="btn btn-primary") }}
+          </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

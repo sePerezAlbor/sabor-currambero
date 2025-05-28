@@ -1,12 +1,11 @@
 from flask import Blueprint, render_template, jsonify, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
-from app.forms import LoginForm,RegisterForm, PerfilForm
+from app.forms import LoginForm,RegisterForm, PerfilForm, RestauranteForm
 from app.models import Usuario, Restaurante, PerfilGastronomico
 from app import bcrypt
 from app import db
 
 main = Blueprint('main', __name__)
-
 def perfil_a_dict(perfil):
     return {
         "tipo_comida_fav": perfil.tipo_comida_fav,
@@ -22,7 +21,7 @@ def index():
         perfil = current_user.perfil  # accede a la relación definida en el modelo Usuario
         perfil_dict = perfil_a_dict(perfil) if perfil else None
 
-    return render_template('index.html', usuario=current_user, perfil=perfil_dict, tipos_comida=tipos_comida)
+    return render_template('index.html', usuario=current_user, perfil=perfil_dict, tipos_comida=tipos_comida) 
 
 # Login
 @main.route('/login', methods=['GET', 'POST'])
@@ -40,6 +39,65 @@ def login():
             flash('Correo o contraseña inválidos', 'danger')
 
     return render_template('login.html', form=form)
+
+@main.route('/GestionarRestaurantes', methods=['GET', 'POST'])
+@login_required
+def gestionar_restaurantes():
+    if not current_user.is_authenticated or current_user.rol != 'admin':
+        flash('No tienes permiso para acceder a esta página.', 'danger')
+        return redirect(url_for('main.index'))
+
+    restaurantes = Restaurante.query.all()
+    return render_template('gestionar_restaurantes.html',usuario=current_user, restaurantes=restaurantes)
+
+@main.route('/ActualizarRestaurantes', methods=['POST'])
+@login_required
+def ActualizarRestaurantes():
+    if not current_user.is_authenticated or current_user.rol != 'admin':
+        flash('No tienes permiso para realizar esta acción.', 'danger')
+        return redirect(url_for('main.index'))
+
+    for r in Restaurante.query.all():
+        prefix = f"r_{r.id_restaurante}_"
+        r.nombre = request.form.get(prefix + "nombre")
+        r.direccion = request.form.get(prefix + "direccion")
+        r.tipo_comida = request.form.get(prefix + "tipo_comida")
+        r.precio_promedio = request.form.get(prefix + "precio_promedio", type=int)
+        r.calificacion_prom = request.form.get(prefix + "calificacion_prom", type=float)
+        r.estado = True if request.form.get(prefix + "estado") == 'activo' else False
+        r.instagram = request.form.get(prefix + "instagram")
+
+    db.session.commit()
+    flash('Restaurantes actualizados correctamente.', 'success')
+    return redirect(url_for('main.GestionarRestaurantes'))
+
+@main.route('/AgregarRestaurante', methods=['GET', 'POST'])
+@login_required
+def AgregarRestaurante():
+    if not current_user.is_authenticated or current_user.rol != 'admin':
+        flash('No tienes permiso para acceder a esta página.', 'danger')
+        return redirect(url_for('main.index'))
+
+    form = RestauranteForm()
+
+    if form.validate_on_submit():
+        nuevo_restaurante = Restaurante(
+            nombre=form.nombre.data,
+            direccion=form.direccion.data,
+            tipo_comida=form.tipo_comida.data,
+            precio_promedio=form.precio_promedio.data,
+            latitud=form.latitud.data,
+            longitud=form.longitud.data,
+            calificacion_prom=form.calificacion_prom.data,
+            estado=True if form.estado.data == 'activo' else False,
+            instagram=form.instagram.data
+        )
+        db.session.add(nuevo_restaurante)
+        db.session.commit()
+        flash('Restaurante agregado correctamente.', 'success')
+        return redirect(url_for('main.GestionarRestaurantes'))
+
+    return render_template('agregar_restaurante.html', form=form, usuario=current_user)
 
 @main.route('/perfil', methods=['GET', 'POST'])
 @login_required

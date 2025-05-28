@@ -1,7 +1,19 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, SelectField
-from wtforms import StringField, TextAreaField, IntegerField, SubmitField,SelectField
-from wtforms.validators import DataRequired, EqualTo, Email, Optional
+from wtforms import StringField, TextAreaField, IntegerField, SubmitField,SelectField, DecimalField
+from wtforms.validators import DataRequired, EqualTo, Email, Optional, Length, NumberRange
+
+class RestauranteForm(FlaskForm):
+    nombre = StringField('Nombre', validators=[DataRequired(), Length(max=100)])
+    direccion = StringField('Dirección', validators=[Optional(), Length(max=200)])
+    tipo_comida = StringField('Tipo de comida', validators=[DataRequired(), Length(max=100)])
+    precio_promedio = IntegerField('Precio promedio', validators=[DataRequired(), NumberRange(min=0)])
+    latitud = DecimalField('Latitud', places=6, validators=[Optional()])
+    longitud = DecimalField('Longitud', places=6, validators=[Optional()])
+    calificacion_prom = DecimalField('Calificación promedio', places=1, validators=[DataRequired(), NumberRange(min=0, max=5)])
+    estado = SelectField('Estado', choices=[('activo', 'Activo'), ('inactivo', 'Inactivo')], validators=[DataRequired()])
+    instagram = StringField('Instagram', validators=[Optional(), Length(max=50)])
+    submit = SubmitField('Agregar Restaurante')
 
 class PerfilForm(FlaskForm):
     primer_nombre = StringField('Primer nombre', validators=[DataRequired()])

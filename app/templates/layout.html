@@ -34,6 +34,9 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                 <li><a class="dropdown-item" href="{{ url_for('main.perfil') }}">Perfil</a></li>
+                                {% if current_user.rol == 'admin' %}
+                                    <li><a class="dropdown-item" href="{{ url_for('main.gestionar_restaurantes') }}">Gestionar Restaurantes</a></li>
+                                {% endif %}
                                 <li><a class="dropdown-item" href="{{ url_for('main.logout') }}">Cerrar sesión</a></li>
                             </ul>
                         </li>
