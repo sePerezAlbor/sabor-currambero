@@ -1,0 +1,60 @@
+{% extends 'layout.html' %}
+
+{% block title %}Perfil{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Actualizar perfil</h2>
+
+    <form method="POST" action="{{ url_for('main.perfil') }}">
+        {{ form.hidden_tag() }} {# Para CSRF si usas Flask-WTF #}
+
+        <!-- Datos personales -->
+        <div class="mb-3">
+            <label for="primer_nombre" class="form-label">Primer nombre</label>
+            <input type="text" class="form-control" id="primer_nombre" name="primer_nombre" value="{{ usuario.primer_nombre }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="segundo_nombre" class="form-label">Segundo nombre</label>
+            <input type="text" class="form-control" id="segundo_nombre" name="segundo_nombre" value="{{ usuario.segundo_nombre or '' }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="primer_apellido" class="form-label">Primer apellido</label>
+            <input type="text" class="form-control" id="primer_apellido" name="primer_apellido" value="{{ usuario.primer_apellido }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="segundo_apellido" class="form-label">Segundo apellido</label>
+            <input type="text" class="form-control" id="segundo_apellido" name="segundo_apellido" value="{{ usuario.segundo_apellido or '' }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="correo" class="form-label">Correo electrónico</label>
+            <input type="email" class="form-control" id="correo" name="correo" value="{{ usuario.correo }}" required>
+        </div>
+
+        <!-- Perfil gastronómico -->
+        <hr>
+        <h4 class="mt-4">Perfil culinario</h4>
+
+       <div class="mb-3">
+            {{ form.tipo_comida_fav.label(class="form-label") }}
+            {{ form.tipo_comida_fav(class="form-control") }}
+        </div>
+
+        <div class="mb-3">
+            <label for="restricciones" class="form-label">Restricciones alimentarias</label>
+            <textarea class="form-control" id="restricciones" name="restricciones" rows="3" required>{{ usuario.perfil.restricciones or '' }}</textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="presupuesto_promedio" class="form-label">Presupuesto promedio</label>
+            <input type="number" class="form-control" id="presupuesto_promedio" name="presupuesto_promedio" value="{{ usuario.perfil.presupuesto_promedio or '' }}">
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">Actualizar perfil culinario</button>
+    </form>
+</div>
+{% endblock %}
