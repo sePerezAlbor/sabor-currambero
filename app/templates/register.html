@@ -4,32 +4,60 @@
 
 {% block content %}
 <h3 class="text-center mb-4">Crear cuenta</h3>
+
+<!-- Bloque para mensajes flash -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
 <form method="POST">
     {{ form.hidden_tag() }}
 
     <div class="mb-3">
         {{ form.primer_nombre.label(class="form-label") }}
         {{ form.primer_nombre(class="form-control") }}
+        {% for error in form.primer_nombre.errors %}
+          <div class="text-danger">{{ error }}</div>
+        {% endfor %}
     </div>
 
     <div class="mb-3">
         {{ form.primer_apellido.label(class="form-label") }}
         {{ form.primer_apellido(class="form-control") }}
+        {% for error in form.primer_apellido.errors %}
+          <div class="text-danger">{{ error }}</div>
+        {% endfor %}
     </div>
 
     <div class="mb-3">
         {{ form.correo.label(class="form-label") }}
         {{ form.correo(class="form-control") }}
+        {% for error in form.correo.errors %}
+          <div class="text-danger">{{ error }}</div>
+        {% endfor %}
     </div>
 
     <div class="mb-3">
         {{ form.contrasenia.label(class="form-label") }}
         {{ form.contrasenia(class="form-control") }}
+        {% for error in form.contrasenia.errors %}
+          <div class="text-danger">{{ error }}</div>
+        {% endfor %}
     </div>
 
     <div class="mb-3">
         {{ form.confirmar_contrasenia.label(class="form-label") }}
         {{ form.confirmar_contrasenia(class="form-control") }}
+        {% for error in form.confirmar_contrasenia.errors %}
+          <div class="text-danger">{{ error }}</div>
+        {% endfor %}
     </div>
 
     <div class="d-grid">

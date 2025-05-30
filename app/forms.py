@@ -37,6 +37,8 @@ class LoginForm(FlaskForm):
 # ----------------------
 # Formulario de Registro
 # ----------------------
+from app.models import Usuario  
+
 class RegisterForm(FlaskForm):
     primer_nombre = StringField('Primer nombre', validators=[DataRequired()])
     primer_apellido = StringField('Primer apellido', validators=[DataRequired()])
@@ -44,3 +46,9 @@ class RegisterForm(FlaskForm):
     contrasenia = PasswordField('Contraseña', validators=[DataRequired()])
     confirmar_contrasenia = PasswordField('Confirmar contraseña', validators=[DataRequired(), EqualTo('contrasenia')])
     submit = SubmitField('Registrarse')
+
+
+    def validate_correo(self, field):
+        if Usuario.query.filter_by(correo=field.data).first():
+            raise ValueError('Este correo ya está registrado.')
+

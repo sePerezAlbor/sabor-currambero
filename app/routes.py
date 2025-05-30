@@ -28,18 +28,31 @@ def index():
 @main.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('main.perfil'))
+        return redirect(url_for('main.dashboard'))  # Redirección estándar para logueados
 
     form = LoginForm()
     if form.validate_on_submit():
         usuario = Usuario.query.filter_by(correo=form.correo.data).first()
-        if usuario and usuario.contrasenia == form.contrasenia.data:
-            login_user(usuario)
-            return redirect(url_for('main.perfil'))
+        if usuario:
+            if usuario.contrasenia == form.contrasenia.data:
+                login_user(usuario)
+                flash(f'Bienvenido/a, {usuario.primer_nombre}!', 'success')
+
+                # 🔁 Redirección según rol y perfil
+                if usuario.rol == 'admin':
+                    return redirect(url_for('main.index'))
+                elif usuario.perfil:
+                    return redirect(url_for('main.index'))
+                else:
+                    return redirect(url_for('main.perfil'))
+            else:
+                flash('Contraseña incorrecta.', 'danger')
         else:
-            flash('Correo o contraseña inválidos', 'danger')
+            flash('El correo no está registrado.', 'danger')
 
     return render_template('login.html', form=form)
+
+
 
 @main.route('/GestionarRestaurantes', methods=['GET', 'POST'])
 @login_required
@@ -200,8 +213,10 @@ def register():
         )
         db.session.add(nuevo_usuario)
         db.session.commit()
-        flash('Registro exitoso. Ahora puedes iniciar sesión.', 'success')
-        return redirect(url_for('main.login'))
+        login_user(nuevo_usuario)
+        flash(f'Registro exitoso. Bienvenido/a, {nuevo_usuario.primer_nombre}!', 'success')
+        return redirect(url_for('main.perfil'))  
+
     
     return render_template('register.html', form=form)
 
