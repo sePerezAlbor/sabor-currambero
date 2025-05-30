@@ -16,6 +16,7 @@ def perfil_a_dict(perfil):
 @main.route('/')
 def index():
     perfil = None
+    perfil_dict = None
     tipos_comida = db.session.query(Restaurante.tipo_comida).distinct().all()
     if current_user.is_authenticated:
         perfil = current_user.perfil  # accede a la relación definida en el modelo Usuario
@@ -80,7 +81,23 @@ def AgregarRestaurante():
 
     form = RestauranteForm()
 
+
     if form.validate_on_submit():
+        
+        if not (-90 <= form.latitud.data <= 90):
+            flash("Latitud fuera de rango", 'danger')
+            return redirect(url_for('main.AgregarRestaurante'))
+        if not (-180 <= form.longitud.data <= 180):
+            flash("Longitud fuera de rango", 'danger')
+            return redirect(url_for('main.AgregarRestaurante'))
+        if form.calificacion_prom.data < 0 or form.calificacion_prom.data > 5:
+            flash("Calificación promedio debe estar entre 0 y 5", 'danger')
+            return redirect(url_for('main.AgregarRestaurante'))
+        if form.precio_promedio.data < 0:
+            flash("Precio promedio no puede ser negativo", 'danger')
+            return redirect(url_for('main.AgregarRestaurante'))
+        
+        # Crear el nuevo restaurante
         nuevo_restaurante = Restaurante(
             nombre=form.nombre.data,
             direccion=form.direccion.data,
@@ -95,7 +112,7 @@ def AgregarRestaurante():
         db.session.add(nuevo_restaurante)
         db.session.commit()
         flash('Restaurante agregado correctamente.', 'success')
-        return redirect(url_for('main.GestionarRestaurantes'))
+        return redirect(url_for('main.gestionar_restaurantes'))
 
     return render_template('agregar_restaurante.html', form=form, usuario=current_user)
 
