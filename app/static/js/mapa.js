@@ -15,6 +15,16 @@ document.addEventListener("DOMContentLoaded", function () {
         marcadores = [];
     }
 
+    function crearBotonFavorito(id_restaurante) {
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = `/favoritos/agregar/${id_restaurante}`;
+        form.innerHTML = `
+            <button type="submit" class="btn btn-sm btn-outline-danger mt-2">❤️ Añadir a Favoritos</button>
+        `;
+        return form.outerHTML;
+    }
+
     function agregarMarcadores(data) {
         marcadorPorId = {}; // Reiniciar el mapa de marcadores
         data.forEach(restaurante => {
@@ -25,12 +35,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 Precio: $${restaurante.precio_promedio}<br>
                 Calificación: ${restaurante.calificacion_prom} ⭐<br>
                 <a href="https://instagram.com/${restaurante.instagram.replace('@','')}" target="_blank">${restaurante.instagram}</a>
-            `);
+                ${crearBotonFavorito(restaurante.id)}`);
             marcadores.push(marker);
             marcadorPorId[restaurante.id] = marker;
         });
     }
-
 
     function actualizarRanking(restaurantes) {
         const rankingDiv = document.getElementById('rankingRestaurantes');
@@ -42,13 +51,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
         top.forEach(r => {
             const item = document.createElement("li");
-            item.className = "list-group-item";
-            item.innerHTML = `
-                <strong>${r.nombre}</strong><br>
-                ⭐ ${r.calificacion_prom}
-            `;
-            item.setAttribute('data-id', r.id);
+            item.className = "list-group-item d-flex flex-column align-items-start";
             item.style.cursor = 'pointer';
+
+            const nombre = document.createElement("strong");
+            nombre.textContent = r.nombre;
+
+            const calificacion = document.createElement("div");
+            calificacion.innerHTML = `⭐ ${r.calificacion_prom}`;
+
+            const boton = document.createElement("button");
+            boton.className = "btn btn-sm btn-outline-danger mt-2";
+            boton.textContent = "❤️ Añadir a Favoritos";
+            boton.addEventListener("click", function (e) {
+                e.stopPropagation(); // evita que dispare el evento del item
+                agregarAFavoritos(r.id);
+            });
 
             item.addEventListener('click', () => {
                 const marcador = marcadorPorId[r.id];
@@ -58,9 +76,19 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             });
 
+            item.appendChild(nombre);
+            item.appendChild(calificacion);
+            item.appendChild(boton);
             rankingDiv.appendChild(item);
         });
+    }
 
+    function agregarAFavoritos(id_restaurante) {
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = `/favoritos/agregar/${id_restaurante}`;
+        document.body.appendChild(form);
+        form.submit();
     }
 
     function aplicarFiltros(restaurantes) {

@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, jsonify, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
 from app.forms import LoginForm,RegisterForm, PerfilForm, RestauranteForm
-from app.models import Usuario, Restaurante, PerfilGastronomico
+from app.models import Usuario, Restaurante, PerfilGastronomico, Favorito
 from app import bcrypt
 from app import db
 
@@ -70,17 +70,19 @@ def ActualizarRestaurantes():
 
     db.session.commit()
     flash('Restaurantes actualizados correctamente.', 'success')
-    return redirect(url_for('main.GestionarRestaurantes'))
+    return redirect(url_for('main.gestionar_restaurantes'))
 
 @main.route('/AgregarRestaurante', methods=['GET', 'POST'])
 @login_required
 def AgregarRestaurante():
+    tipos_comida = db.session.query(Restaurante.tipo_comida).distinct().all()
+    
     if not current_user.is_authenticated or current_user.rol != 'admin':
         flash('No tienes permiso para acceder a esta página.', 'danger')
         return redirect(url_for('main.index'))
 
     form = RestauranteForm()
-
+    form.tipo_comida.choices = [(tipo[0], tipo[0]) for tipo in tipos_comida if tipo[0] is not None]
 
     if form.validate_on_submit():
         
@@ -114,7 +116,7 @@ def AgregarRestaurante():
         flash('Restaurante agregado correctamente.', 'success')
         return redirect(url_for('main.gestionar_restaurantes'))
 
-    return render_template('agregar_restaurante.html', form=form, usuario=current_user)
+    return render_template('agregar_restaurante.html', form=form, usuario=current_user, tipos=tipos_comida)
 
 @main.route('/perfil', methods=['GET', 'POST'])
 @login_required
@@ -202,3 +204,52 @@ def register():
         return redirect(url_for('main.login'))
     
     return render_template('register.html', form=form)
+
+
+@main.route('/favoritos')
+@login_required
+def mostrar_favoritos():
+    # Obtener todos los restaurantes marcados como favoritos por el usuario actual
+    favoritos = (
+        Restaurante.query
+        .join(Favorito, Restaurante.id_restaurante == Favorito.id_restaurante)
+        .filter(Favorito.id_usuario == current_user.id_usuario)
+        .all()
+    )
+
+    return render_template('favoritos.html', usuario = current_user,favoritos=favoritos)
+
+@main.route('/favoritos/eliminar/<int:id_restaurante>', methods=['POST'])
+@login_required
+def eliminar_favorito(id_restaurante):
+    favorito = Favorito.query.filter_by(id_usuario=current_user.id_usuario, id_restaurante=id_restaurante).first()
+    if favorito:
+        db.session.delete(favorito)
+        db.session.commit()
+        flash('Restaurante eliminado de favoritos.', 'success')
+    else:
+        flash('El restaurante no está en tus favoritos.', 'warning')
+    return redirect(url_for('main.mostrar_favoritos'))
+
+@main.route('/favoritos/agregar/<int:id_restaurante>', methods=['POST'])
+@login_required
+def agregar_favorito(id_restaurante):
+    # Verifica si el restaurante ya está en favoritos
+    favorito_existente = Favorito.query.filter_by(
+        id_usuario=current_user.id_usuario,
+        id_restaurante=id_restaurante
+    ).first()
+
+    if favorito_existente:
+        flash('Este restaurante ya está en tus favoritos.', 'info')
+    else:
+        nuevo_favorito = Favorito(
+            id_usuario=current_user.id_usuario,
+            id_restaurante=id_restaurante
+        )
+        db.session.add(nuevo_favorito)
+        db.session.commit()
+        flash('Restaurante agregado a favoritos.', 'success')
+
+    # Redirecciona a la página anterior o a alguna por defecto
+    return redirect(request.referrer or url_for('main.index'))

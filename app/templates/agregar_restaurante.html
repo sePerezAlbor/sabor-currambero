@@ -30,11 +30,12 @@
 
             <div class="col-md-6">
               <label class="form-label">{{ form.tipo_comida.label.text }}</label>
-              {{ form.tipo_comida(class="form-control") }}
+              {{ form.tipo_comida(class="form-select") }}
               {% for error in form.tipo_comida.errors %}
                   <div class="text-danger">{{ error }}</div>
               {% endfor %}
             </div>
+
 
             <div class="col-md-6">
               <label class="form-label">{{ form.precio_promedio.label.text }}</label>

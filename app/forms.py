@@ -6,7 +6,7 @@ from wtforms.validators import DataRequired, EqualTo, Email, Optional, Length, N
 class RestauranteForm(FlaskForm):
     nombre = StringField('Nombre', validators=[DataRequired(), Length(max=100)])
     direccion = StringField('Dirección', validators=[Optional(), Length(max=200)])
-    tipo_comida = StringField('Tipo de comida', validators=[DataRequired(), Length(max=100)])
+    tipo_comida = SelectField('Tipo de comida', choices=[])  # choices se llenará en la vista
     precio_promedio = IntegerField('Precio promedio', validators=[DataRequired(), NumberRange(min=0)])
     latitud = DecimalField('Latitud', places=6, validators=[Optional()])
     longitud = DecimalField('Longitud', places=6, validators=[Optional()])
